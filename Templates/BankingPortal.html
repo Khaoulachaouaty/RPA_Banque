@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Banque Nationale - Système Central</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 50px; }
+        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 400px; }
+        h2 { color: #1a237e; text-align: center; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #1a237e; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        #result { margin-top: 20px; padding: 15px; background: #e8f5e9; border-left: 5px solid #4caf50; display: none; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Création de Compte</h2>
+        <div class="input-group">
+            <label>ID Agent</label>
+            <input type="text" id="username" placeholder="Agent ID">
+        </div>
+        <div class="input-group">
+            <label>Nom Client</label>
+            <input type="text" id="nom" placeholder="Nom Complet">
+        </div>
+        <button id="btn-valider" onclick="generate()">Valider la Création</button>
+        <div id="result">
+            <strong>Succès!</strong><br>
+            Compte: <span id="numCompte">TN59 1234 5678 9012</span>
+        </div>
+    </div>
+    <script>
+        function generate() {
+            const nom = document.getElementById('nom').value;
+            if(!nom) return alert('Veuillez saisir le nom');
+            const rib = "TN59 " + Math.floor(1000 + Math.random() * 9000) + " " + Math.floor(1000 + Math.random() * 9000) + " " + Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('numCompte').innerText = rib;
+            document.getElementById('result').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

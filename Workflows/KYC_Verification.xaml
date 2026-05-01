@@ -1,0 +1,83 @@
+<Activity mc:Ignorable="sap sap2010" x:Class="KYC_Verification" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:njl="clr-namespace:Newtonsoft.Json.Linq;assembly=Newtonsoft.Json" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="in_CINNum" Type="InArgument(x:String)" />
+    <x:Property Name="config_KycUrl" Type="InArgument(x:String)" />
+    <x:Property Name="config_KycToken" Type="InArgument(x:String)" />
+    <x:Property Name="out_KycStatus" Type="OutArgument(x:String)" />
+  </x:Members>
+  <sap2010:WorkflowViewState.IdRef>ActivityBuilder_1</sap2010:WorkflowViewState.IdRef>
+  <TextExpression.NamespacesForImplementation>
+    <sco:Collection x:TypeArguments="x:String">
+      <x:String>System.Activities</x:String>
+      <x:String>System.Activities.Statements</x:String>
+      <x:String>System</x:String>
+      <x:String>System.Collections.Generic</x:String>
+      <x:String>System.Collections.ObjectModel</x:String>
+      <x:String>Newtonsoft.Json.Linq</x:String>
+      <x:String>UiPath.Core</x:String>
+      <x:String>UiPath.Core.Activities</x:String>
+      <x:String>UiPath.Web.Activities</x:String>
+    </sco:Collection>
+  </TextExpression.NamespacesForImplementation>
+  <TextExpression.ReferencesForImplementation>
+    <sco:Collection x:TypeArguments="AssemblyReference">
+      <AssemblyReference>System.Private.CoreLib</AssemblyReference>
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>UiPath.System.Activities</AssemblyReference>
+      <AssemblyReference>Newtonsoft.Json</AssemblyReference>
+      <AssemblyReference>UiPath.WebAPI.Activities</AssemblyReference>
+    </sco:Collection>
+  </TextExpression.ReferencesForImplementation>
+  <Sequence DisplayName="KYC_Verification" sap:VirtualizedContainerService.HintSize="400,600" sap2010:WorkflowViewState.IdRef="Sequence_1">
+    <Sequence.Variables>
+      <Variable x:TypeArguments="x:String" Name="str_JsonResponse" />
+      <Variable x:TypeArguments="njl:JObject" Name="json_KycData" />
+    </Sequence.Variables>
+    <sap:WorkflowViewStateService.ViewState>
+      <scg:Dictionary x:TypeArguments="x:String, x:Object">
+        <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+      </scg:Dictionary>
+    </sap:WorkflowViewStateService.ViewState>
+    <ui:LogMessage DisplayName="Log KYC" sap:VirtualizedContainerService.HintSize="338,141" sap2010:WorkflowViewState.IdRef="LogMessage_2" Level="Info" Message="[&quot;Vérification KYC pour CIN : &quot; + in_CINNum]" />
+    <Assign DisplayName="Mock KYC API Response" sap:VirtualizedContainerService.HintSize="338,82" sap2010:WorkflowViewState.IdRef="Assign_Mock">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[str_JsonResponse]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">["{ ""isSanctioned"": false, ""riskScore"": 15 }"]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <ui:DeserializeJson x:TypeArguments="njl:JObject" JsonSample="{x:Null}" DisplayName="Deserialize JSON" sap:VirtualizedContainerService.HintSize="338,60" sap2010:WorkflowViewState.IdRef="DeserializeJson`1_1" JsonObject="[json_KycData]" JsonString="[str_JsonResponse]" />
+    <If Condition="[CBool(json_KycData(&quot;isSanctioned&quot;))]" sap:VirtualizedContainerService.HintSize="338,52" sap2010:WorkflowViewState.IdRef="If_2">
+      <sap:WorkflowViewStateService.ViewState>
+        <scg:Dictionary x:TypeArguments="x:String, x:Object">
+          <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+          <x:Boolean x:Key="IsPinned">False</x:Boolean>
+        </scg:Dictionary>
+      </sap:WorkflowViewStateService.ViewState>
+      <If.Then>
+        <Assign sap:VirtualizedContainerService.HintSize="334,82" sap2010:WorkflowViewState.IdRef="Assign_1">
+          <Assign.To><OutArgument x:TypeArguments="x:String">[out_KycStatus]</OutArgument></Assign.To>
+          <Assign.Value><InArgument x:TypeArguments="x:String">["REJETE"]</InArgument></Assign.Value>
+        </Assign>
+      </If.Then>
+      <If.Else>
+        <If Condition="[Convert.ToInt32(json_KycData(&quot;riskScore&quot;)) &gt; 70]" sap:VirtualizedContainerService.HintSize="334,182" sap2010:WorkflowViewState.IdRef="If_1">
+          <If.Then>
+            <Assign sap:VirtualizedContainerService.HintSize="334,82" sap2010:WorkflowViewState.IdRef="Assign_2">
+              <Assign.To><OutArgument x:TypeArguments="x:String">[out_KycStatus]</OutArgument></Assign.To>
+              <Assign.Value><InArgument x:TypeArguments="x:String">["A_VERIFIER"]</InArgument></Assign.Value>
+            </Assign>
+          </If.Then>
+          <If.Else>
+            <Assign sap:VirtualizedContainerService.HintSize="334,82" sap2010:WorkflowViewState.IdRef="Assign_3">
+              <Assign.To><OutArgument x:TypeArguments="x:String">[out_KycStatus]</OutArgument></Assign.To>
+              <Assign.Value><InArgument x:TypeArguments="x:String">["APPROUVE"]</InArgument></Assign.Value>
+            </Assign>
+          </If.Else>
+        </If>
+      </If.Else>
+    </If>
+    <ui:LogMessage DisplayName="Log Result" sap:VirtualizedContainerService.HintSize="338,141" sap2010:WorkflowViewState.IdRef="LogMessage_1" Level="Info" Message="[&quot;Statut KYC: &quot; + out_KycStatus]" />
+  </Sequence>
+</Activity>

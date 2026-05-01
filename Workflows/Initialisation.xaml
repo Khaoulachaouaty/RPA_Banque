@@ -1,0 +1,64 @@
+<Activity mc:Ignorable="sap sap2010" x:Class="Initialisation" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:s="clr-namespace:System;assembly=System.Private.CoreLib" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="out_Config" Type="OutArgument(scg:Dictionary(x:String, x:String))" />
+  </x:Members>
+  <sap2010:WorkflowViewState.IdRef>ActivityBuilder_1</sap2010:WorkflowViewState.IdRef>
+  <TextExpression.NamespacesForImplementation>
+    <sco:Collection x:TypeArguments="x:String">
+      <x:String>System.Activities</x:String>
+      <x:String>System.Activities.Statements</x:String>
+      <x:String>System</x:String>
+      <x:String>System.Collections.Generic</x:String>
+      <x:String>System.Collections.ObjectModel</x:String>
+      <x:String>System.IO</x:String>
+      <x:String>System.Linq</x:String>
+      <x:String>UiPath.Core.Activities</x:String>
+      <x:String>UiPath.Core</x:String>
+    </sco:Collection>
+  </TextExpression.NamespacesForImplementation>
+  <TextExpression.ReferencesForImplementation>
+    <sco:Collection x:TypeArguments="AssemblyReference">
+      <AssemblyReference>System.Private.CoreLib</AssemblyReference>
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>UiPath.System.Activities</AssemblyReference>
+    </sco:Collection>
+  </TextExpression.ReferencesForImplementation>
+  <Sequence DisplayName="Initialisation" sap:VirtualizedContainerService.HintSize="500,1000" sap2010:WorkflowViewState.IdRef="Sequence_1">
+    <sap:WorkflowViewStateService.ViewState>
+      <scg:Dictionary x:TypeArguments="x:String, x:Object">
+        <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+      </scg:Dictionary>
+    </sap:WorkflowViewStateService.ViewState>
+    <Assign DisplayName="Init Dictionary" sap:VirtualizedContainerService.HintSize="438,82" sap2010:WorkflowViewState.IdRef="Assign_1">
+      <Assign.To><OutArgument x:TypeArguments="scg:Dictionary(x:String, x:String)">[out_Config]</OutArgument></Assign.To>
+      <Assign.Value><InArgument x:TypeArguments="scg:Dictionary(x:String, x:String)">[New Dictionary(Of String, String)]</InArgument></Assign.Value>
+    </Assign>
+    <ui:ForEach x:TypeArguments="x:String" DisplayName="Read CSV Lines" sap:VirtualizedContainerService.HintSize="438,600" sap2010:WorkflowViewState.IdRef="ForEach_1" Values="[File.ReadAllLines(&quot;Data\Config.csv&quot;).Skip(1)]">
+      <ui:ForEach.Body>
+        <ActivityAction x:TypeArguments="x:String">
+          <ActivityAction.Argument>
+            <DelegateInArgument x:TypeArguments="x:String" Name="line" />
+          </ActivityAction.Argument>
+          <Sequence DisplayName="Parse Line" sap:VirtualizedContainerService.HintSize="400,474" sap2010:WorkflowViewState.IdRef="Sequence_2">
+            <Sequence.Variables>
+              <Variable x:TypeArguments="s:String[]" Name="parts" />
+            </Sequence.Variables>
+            <Assign DisplayName="Split" sap:VirtualizedContainerService.HintSize="338,82" sap2010:WorkflowViewState.IdRef="Assign_2">
+              <Assign.To><OutArgument x:TypeArguments="s:String[]">[parts]</OutArgument></Assign.To>
+              <Assign.Value><InArgument x:TypeArguments="s:String[]">[line.Split(","c)]</InArgument></Assign.Value>
+            </Assign>
+            <If Condition="[parts.Length &gt;= 2]" sap:VirtualizedContainerService.HintSize="338,241" sap2010:WorkflowViewState.IdRef="If_1">
+              <If.Then>
+                <Assign DisplayName="Add to Config" sap:VirtualizedContainerService.HintSize="262,82" sap2010:WorkflowViewState.IdRef="Assign_3">
+                  <Assign.To><OutArgument x:TypeArguments="x:String">[out_Config(parts(0))]</OutArgument></Assign.To>
+                  <Assign.Value><InArgument x:TypeArguments="x:String">[If(parts(0).ToLower().EndsWith("path"), Path.GetFullPath(parts(1)), parts(1))]</InArgument></Assign.Value>
+                </Assign>
+              </If.Then>
+            </If>
+          </Sequence>
+        </ActivityAction>
+      </ui:ForEach.Body>
+    </ui:ForEach>
+    <ui:LogMessage DisplayName="Log Result" sap:VirtualizedContainerService.HintSize="438,141" sap2010:WorkflowViewState.IdRef="LogMessage_1" Level="Info" Message="[&quot;Config chargee avec &quot; + out_Config.Count.ToString + &quot; elements.&quot;]" />
+  </Sequence>
+</Activity>

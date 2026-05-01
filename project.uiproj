@@ -1,0 +1,6 @@
+{
+  "Name": "RPA_BanqueKYC",
+  "ProjectType": "Process",
+  "Description": "Processus vierge",
+  "MainFile": "Main.xaml"
+}
