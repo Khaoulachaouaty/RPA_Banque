@@ -1,4 +1,4 @@
-<Activity mc:Ignorable="sap sap2010" x:Class="Compte_Creation" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Activity mc:Ignorable="sap sap2010" x:Class="Compte_Creation" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:s="clr-namespace:System;assembly=System.Private.CoreLib" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <x:Members>
     <x:Property Name="in_Nom" Type="InArgument(x:String)" />
     <x:Property Name="in_PortalPath" Type="InArgument(x:String)" />
@@ -89,6 +89,7 @@
                 </ui:Target>
               </ui:Click.Target>
             </ui:Click>
+            <Delay DisplayName="Wait for JS to populate RIB" Duration="00:00:01.500" sap:VirtualizedContainerService.HintSize="338,60" sap2010:WorkflowViewState.IdRef="Delay_RIB" />
             <ui:GetValue ContinueOnError="{x:Null}" DisplayName="Get RIB" sap:VirtualizedContainerService.HintSize="338,107" sap2010:WorkflowViewState.IdRef="GetValue_1">
               <ui:GetValue.Target>
                 <ui:Target ClippingRegion="{x:Null}" Element="{x:Null}" Id="bf96a8b1-c407-4979-afe3-0d7fae7e3577" Selector="&lt;webctrl tag='SPAN' id='numCompte' /&gt;" WaitForReady="COMPLETE">

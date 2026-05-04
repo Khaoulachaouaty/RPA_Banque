@@ -57,28 +57,42 @@
               <Variable x:TypeArguments="x:String" Name="str_KycStatus" />
               <Variable x:TypeArguments="x:String" Name="str_NumeroCompte" />
               <Variable x:TypeArguments="x:String" Name="str_RIBPath" />
-              <Variable x:TypeArguments="x:String" Name="str_ManualApproval" />
+              <Variable x:TypeArguments="x:String" Name="str_CaseId" />
             </Sequence.Variables>
             <ui:LogMessage DisplayName="Log Start" sap:VirtualizedContainerService.HintSize="442,141" sap2010:WorkflowViewState.IdRef="LogMessage_1" Level="Info" Message="[&quot;Traitement du fichier: &quot; + jsonFile]" />
             <ui:ReadTextFile File="{x:Null}" Content="[str_JsonContent]" DisplayName="Read JSON" FileName="[jsonFile]" sap:VirtualizedContainerService.HintSize="442,80" sap2010:WorkflowViewState.IdRef="ReadText_1" />
             <ui:DeserializeJson x:TypeArguments="njl:JObject" JsonSample="{x:Null}" DisplayName="Deserialize" sap:VirtualizedContainerService.HintSize="442,60" sap2010:WorkflowViewState.IdRef="Deser_1" JsonObject="[job_Client]" JsonString="[str_JsonContent]" />
+            <Assign DisplayName="Get CaseId" sap:VirtualizedContainerService.HintSize="442,82" sap2010:WorkflowViewState.IdRef="Assign_CaseId">
+              <Assign.To><OutArgument x:TypeArguments="x:String">[str_CaseId]</OutArgument></Assign.To>
+              <Assign.Value><InArgument x:TypeArguments="x:String">[If(job_Client("caseId") IsNot Nothing, job_Client("caseId").ToString, "NONE")]</InArgument></Assign.Value>
+            </Assign>
             <Assign DisplayName="Init Dict" sap:VirtualizedContainerService.HintSize="442,82" sap2010:WorkflowViewState.IdRef="Assign_InitDict">
               <Assign.To>
                 <OutArgument x:TypeArguments="scg:Dictionary(x:String, x:String)">[dict_ClientData]</OutArgument>
               </Assign.To>
               <Assign.Value>
-                <InArgument x:TypeArguments="scg:Dictionary(x:String, x:String)">[New Dictionary(Of String, String) From {{"Nom", job_Client("Nom").ToString}, {"Prenom", job_Client("Prenom").ToString}, {"Email", job_Client("Email").ToString}, {"CINNum", job_Client("CINNum").ToString}, {"TypeCompte", job_Client("TypeCompte").ToString}}]</InArgument>
+                <InArgument x:TypeArguments="scg:Dictionary(x:String, x:String)">[New Dictionary(Of String, String) From {
+                    {"Nom", If(job_Client("Nom") IsNot Nothing, job_Client("Nom").ToString, If(job_Client("maDemandeInput") IsNot Nothing AndAlso job_Client("maDemandeInput")("nom") IsNot Nothing, job_Client("maDemandeInput")("nom").ToString, "Inconnu"))},
+                    {"Prenom", If(job_Client("Prenom") IsNot Nothing, job_Client("Prenom").ToString, If(job_Client("maDemandeInput") IsNot Nothing AndAlso job_Client("maDemandeInput")("prenom") IsNot Nothing, job_Client("maDemandeInput")("prenom").ToString, "Inconnu"))},
+                    {"Email", If(job_Client("Email") IsNot Nothing, job_Client("Email").ToString, If(job_Client("maDemandeInput") IsNot Nothing AndAlso job_Client("maDemandeInput")("email") IsNot Nothing, job_Client("maDemandeInput")("email").ToString, dict_Config("config_SmtpEmail")))},
+                    {"CINNum", If(job_Client("CINNum") IsNot Nothing, job_Client("CINNum").ToString, If(job_Client("maDemandeInput") IsNot Nothing AndAlso job_Client("maDemandeInput")("cinNum") IsNot Nothing, job_Client("maDemandeInput")("cinNum").ToString, "000000"))},
+                    {"TypeCompte", If(job_Client("TypeCompte") IsNot Nothing, job_Client("TypeCompte").ToString, If(job_Client("maDemandeInput") IsNot Nothing AndAlso job_Client("maDemandeInput")("typeCompte") IsNot Nothing, job_Client("maDemandeInput")("typeCompte").ToString, "Courant"))},
+                    {"Telephone", If(job_Client("Telephone") IsNot Nothing, job_Client("Telephone").ToString, If(job_Client("maDemandeInput") IsNot Nothing AndAlso job_Client("maDemandeInput")("telephone") IsNot Nothing, job_Client("maDemandeInput")("telephone").ToString, ""))},
+                    {"DateNaissance", If(job_Client("DateNaissance") IsNot Nothing, job_Client("DateNaissance").ToString, If(job_Client("maDemandeInput") IsNot Nothing AndAlso job_Client("maDemandeInput")("dateNaissance") IsNot Nothing, job_Client("maDemandeInput")("dateNaissance").ToString, ""))},
+                    {"Gouvernorat", If(job_Client("Gouvernorat") IsNot Nothing, job_Client("Gouvernorat").ToString, If(job_Client("maDemandeInput") IsNot Nothing AndAlso job_Client("maDemandeInput")("gouvernorat") IsNot Nothing, job_Client("maDemandeInput")("gouvernorat").ToString, ""))}
+                }]</InArgument>
               </Assign.Value>
             </Assign>
             <Assign DisplayName="Identify CIN Image" sap:VirtualizedContainerService.HintSize="442,82" sap2010:WorkflowViewState.IdRef="Assign_CINPath">
               <Assign.To><OutArgument x:TypeArguments="x:String">[str_CINPath]</OutArgument></Assign.To>
-              <Assign.Value><InArgument x:TypeArguments="x:String">[Directory.GetFiles(dict_Config("config_InputPath"), job_Client("CINNum").ToString + "*_CIN*.*").FirstOrDefault()]</InArgument></Assign.Value>
+              <Assign.Value><InArgument x:TypeArguments="x:String">[Directory.GetFiles(dict_Config("config_InputPath"), dict_ClientData("CINNum") + "*_CIN*.*").FirstOrDefault()]</InArgument></Assign.Value>
             </Assign>
             <If Condition="[Not String.IsNullOrEmpty(str_CINPath)]" DisplayName="If Image Exists" sap:VirtualizedContainerService.HintSize="442,500" sap2010:WorkflowViewState.IdRef="If_ImageExists">
               <If.Then>
                 <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" DisplayName="Invoke OCR_Extraction" sap:VirtualizedContainerService.HintSize="338,113" sap2010:WorkflowViewState.IdRef="InvokeOCR" WorkflowFileName="Workflows\OCR_Extraction.xaml">
                   <ui:InvokeWorkflowFile.Arguments>
                     <InArgument x:TypeArguments="x:String" x:Key="in_CINPath">[str_CINPath]</InArgument>
+                    <InArgument x:TypeArguments="x:String" x:Key="in_ExpectedCIN">[dict_ClientData("CINNum")]</InArgument>
                     <OutArgument x:TypeArguments="x:String" x:Key="out_CINNum">[str_CINExtracted]</OutArgument>
                     <OutArgument x:TypeArguments="x:Boolean" x:Key="out_DocsValides">[bool_DocsValides]</OutArgument>
                   </ui:InvokeWorkflowFile.Arguments>
@@ -104,64 +118,79 @@
                   </ui:InvokeWorkflowFile>
                   <If Condition="[str_KycStatus = &quot;APPROUVE&quot;]" DisplayName="If KYC Approved" sap:VirtualizedContainerService.HintSize="338,1623" sap2010:WorkflowViewState.IdRef="If_KYC">
                     <If.Then>
-                      <Sequence DisplayName="Manual and Creation" sap:VirtualizedContainerService.HintSize="400,1262" sap2010:WorkflowViewState.IdRef="Sequence_Appr">
-                        <ui:MessageBox AutoCloseAfter="00:00:00" Buttons="YesNo" Caption="Validation Conformité" ChosenButton="[str_ManualApproval]" DisplayName="Approval Box" sap:VirtualizedContainerService.HintSize="338,85" sap2010:WorkflowViewState.IdRef="MsgBox" Text="[&quot;KYC valide pour &quot; + dict_ClientData(&quot;Nom&quot;) + &quot;. Autoriser ?&quot;]" />
-                        <If Condition="[str_ManualApproval = &quot;Yes&quot;]" DisplayName="If Agent Approves" sap:VirtualizedContainerService.HintSize="338,1026" sap2010:WorkflowViewState.IdRef="If_Manual">
-                          <If.Then>
-                            <Sequence DisplayName="Success Path" sap:VirtualizedContainerService.HintSize="400,665" sap2010:WorkflowViewState.IdRef="Sequence_Final">
-                              <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" DisplayName="Invoke Compte_Creation" sap:VirtualizedContainerService.HintSize="338,113" sap2010:WorkflowViewState.IdRef="InvokeCreation" UnSafe="False" WorkflowFileName="Workflows\Compte_Creation.xaml">
-                                <ui:InvokeWorkflowFile.Arguments>
-                                  <InArgument x:TypeArguments="x:String" x:Key="in_Nom">[dict_ClientData("Nom")]</InArgument>
-                                  <InArgument x:TypeArguments="x:String" x:Key="in_PortalPath">[dict_Config("config_BankingPortalURL")]</InArgument>
-                                  <OutArgument x:TypeArguments="x:String" x:Key="out_NumeroCompte">[str_NumeroCompte]</OutArgument>
-                                </ui:InvokeWorkflowFile.Arguments>
-                              </ui:InvokeWorkflowFile>
-                              <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" DisplayName="Invoke RIB_Generation" sap:VirtualizedContainerService.HintSize="338,113" sap2010:WorkflowViewState.IdRef="InvokeRIB" UnSafe="False" WorkflowFileName="Workflows\RIB_Generation.xaml">
-                                <ui:InvokeWorkflowFile.Arguments>
-                                  <InArgument x:TypeArguments="x:String" x:Key="in_Nom">[dict_ClientData("Nom")]</InArgument>
-                                  <InArgument x:TypeArguments="x:String" x:Key="in_Prenom">[dict_ClientData("Prenom")]</InArgument>
-                                  <InArgument x:TypeArguments="x:String" x:Key="in_CINNum">[str_CINExtracted]</InArgument>
-                                  <InArgument x:TypeArguments="x:String" x:Key="in_NumCompte">[str_NumeroCompte]</InArgument>
-                                  <InArgument x:TypeArguments="x:String" x:Key="in_TypeCompte">[dict_ClientData("TypeCompte")]</InArgument>
-                                  <OutArgument x:TypeArguments="x:String" x:Key="out_RIBPath">[str_RIBPath]</OutArgument>
-                                </ui:InvokeWorkflowFile.Arguments>
-                              </ui:InvokeWorkflowFile>
-                              <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" DisplayName="Invoke Notification" sap:VirtualizedContainerService.HintSize="338,113" sap2010:WorkflowViewState.IdRef="InvokeNotify" UnSafe="False" WorkflowFileName="Workflows\Notification.xaml">
-                                <ui:InvokeWorkflowFile.Arguments>
-                                  <InArgument x:TypeArguments="x:String" x:Key="in_Type">["CONFIRMATION"]</InArgument>
-                                  <InArgument x:TypeArguments="x:String" x:Key="in_Email">[dict_ClientData("Email")]</InArgument>
-                                  <InArgument x:TypeArguments="x:String" x:Key="in_Nom">[dict_ClientData("Nom")]</InArgument>
-                                  <InArgument x:TypeArguments="x:String" x:Key="in_NumCompte">[str_NumeroCompte]</InArgument>
-                                  <InArgument x:TypeArguments="x:String" x:Key="config_SmtpEmail">[dict_Config("config_SmtpEmail")]</InArgument>
-                                  <InArgument x:TypeArguments="x:String" x:Key="config_SmtpPassword">[dict_Config("config_SmtpPassword")]</InArgument>
-                                  <InArgument x:TypeArguments="x:String" x:Key="config_SmtpHost">[dict_Config("config_SmtpHost")]</InArgument>
-                                  <InArgument x:TypeArguments="x:Int32" x:Key="config_SmtpPort">[CInt(dict_Config("config_SmtpPort"))]</InArgument>
-                                  <InArgument x:TypeArguments="x:String" x:Key="in_AttachmentPath">[str_RIBPath]</InArgument>
-                                </ui:InvokeWorkflowFile.Arguments>
-                              </ui:InvokeWorkflowFile>
-                              <ui:MoveFile ContinueOnError="{x:Null}" DestinationResource="{x:Null}" PathResource="{x:Null}" Destination="[dict_Config(&quot;config_OutputPath&quot;)]" DisplayName="Move to Output" sap:VirtualizedContainerService.HintSize="338,157" sap2010:WorkflowViewState.IdRef="Move_1" Overwrite="True" Path="[jsonFile]" />
-                            </Sequence>
-                          </If.Then>
-                        </If>
+                      <Sequence DisplayName="Automatic Creation Path" sap:VirtualizedContainerService.HintSize="400,1024" sap2010:WorkflowViewState.IdRef="Sequence_Final">
+                        <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" DisplayName="Invoke Compte_Creation" sap:VirtualizedContainerService.HintSize="338,113" sap2010:WorkflowViewState.IdRef="InvokeCreation" UnSafe="False" WorkflowFileName="Workflows\Compte_Creation.xaml">
+                          <ui:InvokeWorkflowFile.Arguments>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_Nom">[dict_ClientData("Nom")]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_PortalPath">[dict_Config("config_BankingPortalURL")]</InArgument>
+                            <OutArgument x:TypeArguments="x:String" x:Key="out_NumeroCompte">[str_NumeroCompte]</OutArgument>
+                          </ui:InvokeWorkflowFile.Arguments>
+                        </ui:InvokeWorkflowFile>
+                        <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" DisplayName="Invoke RIB_Generation" sap:VirtualizedContainerService.HintSize="338,113" sap2010:WorkflowViewState.IdRef="InvokeRIB" UnSafe="False" WorkflowFileName="Workflows\RIB_Generation.xaml">
+                          <ui:InvokeWorkflowFile.Arguments>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_Nom">[dict_ClientData("Nom")]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_Prenom">[dict_ClientData("Prenom")]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_CINNum">[str_CINExtracted]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_NumCompte">[str_NumeroCompte]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_TypeCompte">[dict_ClientData("TypeCompte")]</InArgument>
+                            <OutArgument x:TypeArguments="x:String" x:Key="out_RIBPath">[str_RIBPath]</OutArgument>
+                          </ui:InvokeWorkflowFile.Arguments>
+                        </ui:InvokeWorkflowFile>
+                        <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" DisplayName="Invoke Notification" sap:VirtualizedContainerService.HintSize="338,113" sap2010:WorkflowViewState.IdRef="InvokeNotify" UnSafe="False" WorkflowFileName="Workflows\Notification.xaml">
+                          <ui:InvokeWorkflowFile.Arguments>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_Type">["CONFIRMATION"]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_Email">[dict_ClientData("Email")]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_Nom">[dict_ClientData("Nom")]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_NumCompte">[str_NumeroCompte]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="config_SmtpEmail">[dict_Config("config_SmtpEmail")]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="config_SmtpPassword">[dict_Config("config_SmtpPassword")]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="config_SmtpHost">[dict_Config("config_SmtpHost")]</InArgument>
+                            <InArgument x:TypeArguments="x:Int32" x:Key="config_SmtpPort">[CInt(dict_Config("config_SmtpPort"))]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_AttachmentPath">[str_RIBPath]</InArgument>
+                          </ui:InvokeWorkflowFile.Arguments>
+                        </ui:InvokeWorkflowFile>
+                        <ui:MoveFile ContinueOnError="{x:Null}" DestinationResource="{x:Null}" PathResource="{x:Null}" Destination="[dict_Config(&quot;config_OutputPath&quot;)]" DisplayName="Move to Output" sap:VirtualizedContainerService.HintSize="338,157" sap2010:WorkflowViewState.IdRef="Move_1" Overwrite="True" Path="[jsonFile]" />
+                        <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" DisplayName="Invoke Bonita_Update Success" sap:VirtualizedContainerService.HintSize="338,113" sap2010:WorkflowViewState.IdRef="InvokeBonitaSucc" UnSafe="False" WorkflowFileName="Workflows\Bonita_Update.xaml">
+                          <ui:InvokeWorkflowFile.Arguments>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_CaseId">[str_CaseId]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_Status">["SUCCESS"]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_BonitaUrl">[dict_Config("config_Bonita_ApiURL")]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_User">[dict_Config("config_Bonita_User")]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_Pass">[dict_Config("config_Bonita_Password")]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_Message">["Compte créé avec succès: " + str_NumeroCompte]</InArgument>
+                          </ui:InvokeWorkflowFile.Arguments>
+                        </ui:InvokeWorkflowFile>
                       </Sequence>
                     </If.Then>
                   </If>
                 </Sequence>
               </If.Then>
               <If.Else>
-                <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" DisplayName="Invoke Notification Invalide" sap:VirtualizedContainerService.HintSize="338,113" sap2010:WorkflowViewState.IdRef="InvokeNotifyInv" UnSafe="False" WorkflowFileName="Workflows\Notification.xaml">
-                  <ui:InvokeWorkflowFile.Arguments>
-                    <InArgument x:TypeArguments="x:String" x:Key="in_Type">["DOCS_INVALIDES"]</InArgument>
-                    <InArgument x:TypeArguments="x:String" x:Key="in_Email">[dict_ClientData("Email")]</InArgument>
-                    <InArgument x:TypeArguments="x:String" x:Key="in_Nom">[dict_ClientData("Nom")]</InArgument>
-                    <InArgument x:TypeArguments="x:String" x:Key="in_NumCompte">[Nothing]</InArgument>
-                    <InArgument x:TypeArguments="x:String" x:Key="config_SmtpEmail">[dict_Config("config_SmtpEmail")]</InArgument>
-                    <InArgument x:TypeArguments="x:String" x:Key="config_SmtpPassword">[dict_Config("config_SmtpPassword")]</InArgument>
-                    <InArgument x:TypeArguments="x:String" x:Key="config_SmtpHost">[dict_Config("config_SmtpHost")]</InArgument>
-                    <InArgument x:TypeArguments="x:Int32" x:Key="config_SmtpPort">[CInt(dict_Config("config_SmtpPort"))]</InArgument>
-                    <InArgument x:TypeArguments="x:String" x:Key="in_AttachmentPath">[Nothing]</InArgument>
-                  </ui:InvokeWorkflowFile.Arguments>
-                </ui:InvokeWorkflowFile>
+                <Sequence DisplayName="Docs Invalides Path" sap:VirtualizedContainerService.HintSize="400,350">
+                    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" DisplayName="Invoke Notification Invalide" sap:VirtualizedContainerService.HintSize="338,113" sap2010:WorkflowViewState.IdRef="InvokeNotifyInv" UnSafe="False" WorkflowFileName="Workflows\Notification.xaml">
+                      <ui:InvokeWorkflowFile.Arguments>
+                        <InArgument x:TypeArguments="x:String" x:Key="in_Type">["DOCS_INVALIDES"]</InArgument>
+                        <InArgument x:TypeArguments="x:String" x:Key="in_Email">[dict_ClientData("Email")]</InArgument>
+                        <InArgument x:TypeArguments="x:String" x:Key="in_Nom">[dict_ClientData("Nom")]</InArgument>
+                        <InArgument x:TypeArguments="x:String" x:Key="in_NumCompte">[Nothing]</InArgument>
+                        <InArgument x:TypeArguments="x:String" x:Key="config_SmtpEmail">[dict_Config("config_SmtpEmail")]</InArgument>
+                        <InArgument x:TypeArguments="x:String" x:Key="config_SmtpPassword">[dict_Config("config_SmtpPassword")]</InArgument>
+                        <InArgument x:TypeArguments="x:String" x:Key="config_SmtpHost">[dict_Config("config_SmtpHost")]</InArgument>
+                        <InArgument x:TypeArguments="x:Int32" x:Key="config_SmtpPort">[CInt(dict_Config("config_SmtpPort"))]</InArgument>
+                        <InArgument x:TypeArguments="x:String" x:Key="in_AttachmentPath">[Nothing]</InArgument>
+                      </ui:InvokeWorkflowFile.Arguments>
+                    </ui:InvokeWorkflowFile>
+                    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" DisplayName="Invoke Bonita_Update Error" sap:VirtualizedContainerService.HintSize="338,113" sap2010:WorkflowViewState.IdRef="InvokeBonitaErr" UnSafe="False" WorkflowFileName="Workflows\Bonita_Update.xaml">
+                      <ui:InvokeWorkflowFile.Arguments>
+                        <InArgument x:TypeArguments="x:String" x:Key="in_CaseId">[str_CaseId]</InArgument>
+                        <InArgument x:TypeArguments="x:String" x:Key="in_Status">["ERROR_DOCS"]</InArgument>
+                        <InArgument x:TypeArguments="x:String" x:Key="in_BonitaUrl">[dict_Config("config_Bonita_ApiURL")]</InArgument>
+                        <InArgument x:TypeArguments="x:String" x:Key="in_User">[dict_Config("config_Bonita_User")]</InArgument>
+                        <InArgument x:TypeArguments="x:String" x:Key="in_Pass">[dict_Config("config_Bonita_Password")]</InArgument>
+                        <InArgument x:TypeArguments="x:String" x:Key="in_Message">["Documents non conformes"]</InArgument>
+                      </ui:InvokeWorkflowFile.Arguments>
+                    </ui:InvokeWorkflowFile>
+                </Sequence>
               </If.Else>
             </If>
           </Sequence>

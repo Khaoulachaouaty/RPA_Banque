@@ -8,12 +8,15 @@
   <sap2010:WorkflowViewState.IdRef>ActivityBuilder_1</sap2010:WorkflowViewState.IdRef>
   <TextExpression.NamespacesForImplementation>
     <sco:Collection x:TypeArguments="x:String">
+      <x:String>GlobalConstantsNamespace</x:String>
+      <x:String>GlobalVariablesNamespace</x:String>
+      <x:String>Newtonsoft.Json.Linq</x:String>
+      <x:String>System</x:String>
       <x:String>System.Activities</x:String>
       <x:String>System.Activities.Statements</x:String>
-      <x:String>System</x:String>
       <x:String>System.Collections.Generic</x:String>
       <x:String>System.Collections.ObjectModel</x:String>
-      <x:String>Newtonsoft.Json.Linq</x:String>
+      <x:String>System.Linq</x:String>
       <x:String>UiPath.Core</x:String>
       <x:String>UiPath.Core.Activities</x:String>
       <x:String>UiPath.Web.Activities</x:String>
@@ -21,10 +24,14 @@
   </TextExpression.NamespacesForImplementation>
   <TextExpression.ReferencesForImplementation>
     <sco:Collection x:TypeArguments="AssemblyReference">
-      <AssemblyReference>System.Private.CoreLib</AssemblyReference>
-      <AssemblyReference>System.Activities</AssemblyReference>
-      <AssemblyReference>UiPath.System.Activities</AssemblyReference>
       <AssemblyReference>Newtonsoft.Json</AssemblyReference>
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>System.ComponentModel.TypeConverter</AssemblyReference>
+      <AssemblyReference>System.Linq</AssemblyReference>
+      <AssemblyReference>System.ObjectModel</AssemblyReference>
+      <AssemblyReference>System.Private.CoreLib</AssemblyReference>
+      <AssemblyReference>UiPath.System.Activities</AssemblyReference>
+      <AssemblyReference>UiPath.UiAutomation.Activities</AssemblyReference>
       <AssemblyReference>UiPath.WebAPI.Activities</AssemblyReference>
     </sco:Collection>
   </TextExpression.ReferencesForImplementation>
@@ -57,22 +64,34 @@
       </sap:WorkflowViewStateService.ViewState>
       <If.Then>
         <Assign sap:VirtualizedContainerService.HintSize="334,82" sap2010:WorkflowViewState.IdRef="Assign_1">
-          <Assign.To><OutArgument x:TypeArguments="x:String">[out_KycStatus]</OutArgument></Assign.To>
-          <Assign.Value><InArgument x:TypeArguments="x:String">["REJETE"]</InArgument></Assign.Value>
+          <Assign.To>
+            <OutArgument x:TypeArguments="x:String">[out_KycStatus]</OutArgument>
+          </Assign.To>
+          <Assign.Value>
+            <InArgument x:TypeArguments="x:String">["REJETE"]</InArgument>
+          </Assign.Value>
         </Assign>
       </If.Then>
       <If.Else>
         <If Condition="[Convert.ToInt32(json_KycData(&quot;riskScore&quot;)) &gt; 70]" sap:VirtualizedContainerService.HintSize="334,182" sap2010:WorkflowViewState.IdRef="If_1">
           <If.Then>
             <Assign sap:VirtualizedContainerService.HintSize="334,82" sap2010:WorkflowViewState.IdRef="Assign_2">
-              <Assign.To><OutArgument x:TypeArguments="x:String">[out_KycStatus]</OutArgument></Assign.To>
-              <Assign.Value><InArgument x:TypeArguments="x:String">["A_VERIFIER"]</InArgument></Assign.Value>
+              <Assign.To>
+                <OutArgument x:TypeArguments="x:String">[out_KycStatus]</OutArgument>
+              </Assign.To>
+              <Assign.Value>
+                <InArgument x:TypeArguments="x:String">["A_VERIFIER"]</InArgument>
+              </Assign.Value>
             </Assign>
           </If.Then>
           <If.Else>
             <Assign sap:VirtualizedContainerService.HintSize="334,82" sap2010:WorkflowViewState.IdRef="Assign_3">
-              <Assign.To><OutArgument x:TypeArguments="x:String">[out_KycStatus]</OutArgument></Assign.To>
-              <Assign.Value><InArgument x:TypeArguments="x:String">["APPROUVE"]</InArgument></Assign.Value>
+              <Assign.To>
+                <OutArgument x:TypeArguments="x:String">[out_KycStatus]</OutArgument>
+              </Assign.To>
+              <Assign.Value>
+                <InArgument x:TypeArguments="x:String">["APPROUVE"]</InArgument>
+              </Assign.Value>
             </Assign>
           </If.Else>
         </If>

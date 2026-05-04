@@ -14,13 +14,19 @@
       <x:String>System.Linq</x:String>
       <x:String>UiPath.Core.Activities</x:String>
       <x:String>UiPath.Core</x:String>
+      <x:String>GlobalVariablesNamespace</x:String>
+      <x:String>GlobalConstantsNamespace</x:String>
     </sco:Collection>
   </TextExpression.NamespacesForImplementation>
   <TextExpression.ReferencesForImplementation>
     <sco:Collection x:TypeArguments="AssemblyReference">
-      <AssemblyReference>System.Private.CoreLib</AssemblyReference>
       <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>System.ComponentModel.TypeConverter</AssemblyReference>
+      <AssemblyReference>System.Linq</AssemblyReference>
+      <AssemblyReference>System.ObjectModel</AssemblyReference>
+      <AssemblyReference>System.Private.CoreLib</AssemblyReference>
       <AssemblyReference>UiPath.System.Activities</AssemblyReference>
+      <AssemblyReference>UiPath.UiAutomation.Activities</AssemblyReference>
     </sco:Collection>
   </TextExpression.ReferencesForImplementation>
   <Sequence DisplayName="Initialisation" sap:VirtualizedContainerService.HintSize="500,1000" sap2010:WorkflowViewState.IdRef="Sequence_1">
@@ -30,10 +36,14 @@
       </scg:Dictionary>
     </sap:WorkflowViewStateService.ViewState>
     <Assign DisplayName="Init Dictionary" sap:VirtualizedContainerService.HintSize="438,82" sap2010:WorkflowViewState.IdRef="Assign_1">
-      <Assign.To><OutArgument x:TypeArguments="scg:Dictionary(x:String, x:String)">[out_Config]</OutArgument></Assign.To>
-      <Assign.Value><InArgument x:TypeArguments="scg:Dictionary(x:String, x:String)">[New Dictionary(Of String, String)]</InArgument></Assign.Value>
+      <Assign.To>
+        <OutArgument x:TypeArguments="scg:Dictionary(x:String, x:String)">[out_Config]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="scg:Dictionary(x:String, x:String)">[New Dictionary(Of String, String)]</InArgument>
+      </Assign.Value>
     </Assign>
-    <ui:ForEach x:TypeArguments="x:String" DisplayName="Read CSV Lines" sap:VirtualizedContainerService.HintSize="438,600" sap2010:WorkflowViewState.IdRef="ForEach_1" Values="[File.ReadAllLines(&quot;Data\Config.csv&quot;).Skip(1)]">
+    <ui:ForEach x:TypeArguments="x:String" CurrentIndex="{x:Null}" DisplayName="Read CSV Lines" sap:VirtualizedContainerService.HintSize="438,600" sap2010:WorkflowViewState.IdRef="ForEach_1" Values="[File.ReadAllLines(&quot;Data\Config.csv&quot;).Skip(1)]">
       <ui:ForEach.Body>
         <ActivityAction x:TypeArguments="x:String">
           <ActivityAction.Argument>
@@ -44,14 +54,22 @@
               <Variable x:TypeArguments="s:String[]" Name="parts" />
             </Sequence.Variables>
             <Assign DisplayName="Split" sap:VirtualizedContainerService.HintSize="338,82" sap2010:WorkflowViewState.IdRef="Assign_2">
-              <Assign.To><OutArgument x:TypeArguments="s:String[]">[parts]</OutArgument></Assign.To>
-              <Assign.Value><InArgument x:TypeArguments="s:String[]">[line.Split(","c)]</InArgument></Assign.Value>
+              <Assign.To>
+                <OutArgument x:TypeArguments="s:String[]">[parts]</OutArgument>
+              </Assign.To>
+              <Assign.Value>
+                <InArgument x:TypeArguments="s:String[]">[line.Split(","c)]</InArgument>
+              </Assign.Value>
             </Assign>
             <If Condition="[parts.Length &gt;= 2]" sap:VirtualizedContainerService.HintSize="338,241" sap2010:WorkflowViewState.IdRef="If_1">
               <If.Then>
                 <Assign DisplayName="Add to Config" sap:VirtualizedContainerService.HintSize="262,82" sap2010:WorkflowViewState.IdRef="Assign_3">
-                  <Assign.To><OutArgument x:TypeArguments="x:String">[out_Config(parts(0))]</OutArgument></Assign.To>
-                  <Assign.Value><InArgument x:TypeArguments="x:String">[If(parts(0).ToLower().EndsWith("path"), Path.GetFullPath(parts(1)), parts(1))]</InArgument></Assign.Value>
+                  <Assign.To>
+                    <OutArgument x:TypeArguments="x:String">[out_Config(parts(0))]</OutArgument>
+                  </Assign.To>
+                  <Assign.Value>
+                    <InArgument x:TypeArguments="x:String">[If(parts(0).ToLower().EndsWith("path"), Path.GetFullPath(parts(1)), parts(1))]</InArgument>
+                  </Assign.Value>
                 </Assign>
               </If.Then>
             </If>
